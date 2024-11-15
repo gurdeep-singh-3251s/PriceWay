@@ -21,26 +21,36 @@ const Searchbar = () => {
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+    
+        // Validate the Amazon URL
         const isValidLink = isValidAmazonProductURL(searchPrompt);
-
-        if (!isValidLink) return alert("Please provide a valid Amazon link");
-
+        if (!isValidLink) {
+            alert("Please provide a valid Amazon link");
+            return;
+        }
+    
         try {
-            setIsLoading(true);
-
-            // Scrape the product page and save it
+            setIsLoading(true); // Show loading state
+    
+            // Scrape and store the product
             const product = await scrapeAndStoreProduct(searchPrompt);
-
-            // Redirect to the product page if scraping and storing are successful
-            if (product && product._id) {
+    
+            // Check for redirection if the product already exists
+            if (product?.redirectTo) {
+                router.push(product.redirectTo);
+            } else if (product && product._id) {
+                // Redirect to the newly created product's page
                 router.push(`/products/${product._id}`);
+            } else {
+                alert("Failed to retrieve product data. Please try again.");
             }
         } catch (error) {
-            console.log(error);
+            console.error("An error occurred while submitting:", error);
+            alert("An error occurred while processing the request. Please try again.");
         } finally {
-            setIsLoading(false);
+            setIsLoading(false); // End loading state
         }
-    }
+    };
 
     return (
         <form className="flex flex-wrap gap-4 mt-12" onSubmit={handleSubmit}>
