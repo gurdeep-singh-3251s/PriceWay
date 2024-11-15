@@ -67,7 +67,7 @@ export async function getAllProducts() {
   try {
     connectToDB();
 
-    const products = await Product.find();
+    const products = await Product.find().sort({ createdAt: -1 });
 
     return products;
   } catch (error) {
@@ -103,11 +103,8 @@ export async function addUserEmailToProduct(productId: string, userEmail: string
 
     if(!userExists) {
       product.users.push({ email: userEmail });
-
       await product.save();
-
       const emailContent = await generateEmailBody(product, "WELCOME");
-
       await sendEmail(emailContent, [userEmail]);
     }
   } catch (error) {
